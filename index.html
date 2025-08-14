@@ -58,6 +58,11 @@
     }
     .btn:hover { transform: translateY(-2px); }
     .btn:active { transform: translateY(0); }
+    .text-gradient {
+        background: linear-gradient(135deg, #ec4899, #f43f5e, #f59e0b);
+        -webkit-background-clip: text;
+        color: transparent;
+    }
 </style>
 </head>
 <body>
@@ -93,7 +98,8 @@
                 Happy Birthday Love!
             </h2>
             <p class="text-sm sm:text-base md:text-lg text-gray-700 mb-4">
-                Another year, another reason to be grateful that our paths crossed...
+                Another year, another reason to be grateful that our paths crossed.
+                No matter the distance or time, you have been a part of my thoughts...
             </p>
             <button class="btn text-sm sm:text-base" id="next-btn-2">What is special about u?</button>
         </div>
@@ -104,7 +110,7 @@
                 You are special kinaki..
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div class="reason-card p-4 rounded-lg shadow bg-white">
+                <div class="p-4 rounded-lg shadow bg-white">
                     <div class="emoji text-2xl sm:text-3xl">✨</div>
                     <h3 class="text-base sm:text-lg font-bold mb-2 text-pink-600">
                         Your words i cant forget.
@@ -113,14 +119,14 @@
                         Makkha huda hasilo dekhini...
                     </p>
                 </div>
-                <div class="reason-card p-4 rounded-lg shadow bg-white">
+                <div class="p-4 rounded-lg shadow bg-white">
                     <div class="emoji text-2xl sm:text-3xl">😊</div>
                     <h3 class="text-base sm:text-lg font-bold mb-2 text-pink-600">Your Smile</h3>
                     <p class="text-xs sm:text-sm text-gray-700">
                         Tme khusi huda i feel like...
                     </p>
                 </div>
-                <div class="reason-card p-4 rounded-lg shadow bg-white">
+                <div class="p-4 rounded-lg shadow bg-white">
                     <div class="emoji text-2xl sm:text-3xl">🌟</div>
                     <h3 class="text-base sm:text-lg font-bold mb-2 text-pink-600">Your Spirit</h3>
                     <p class="text-xs sm:text-sm text-gray-700">
@@ -170,26 +176,91 @@
 </div>
 
 <script>
-    // Three.js renderer
+    // THREE.JS HEARTS BACKGROUND
     const container = document.getElementById('canvas-container');
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 30;
 
-    // Simple heart (your geometry code here)...
+    const heartShape = new THREE.Shape();
+    heartShape.moveTo(0.5, 0.5);
+    heartShape.bezierCurveTo(0.5, 0.5, 1, 0, 0, 0);
+    heartShape.bezierCurveTo(-1, 0, -1, 1.5, -1, 1.5);
+    heartShape.bezierCurveTo(-1, 2.5, 0.5, 3.5, 0.5, 3.5);
+    heartShape.bezierCurveTo(0.5, 3.5, 2, 2.5, 2, 1.5);
+    heartShape.bezierCurveTo(2, 1.5, 2, 0, 1, 0);
+    heartShape.bezierCurveTo(0.5, 0, 0.5, 0.5, 0.5, 0.5);
 
-    // Resize
+    const extrudeSettings = { depth: 0.5, bevelEnabled: true, bevelSegments: 3, bevelSize: 0.2, bevelThickness: 0.3 };
+    const heartGeometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+
+    const colors = [0xff6b6b, 0xff8e8e, 0xffb3b3, 0xffd8d8, 0xff9e9e, 0xffc1c1, 0xff6b8e, 0xff8eb3];
+    const hearts = [];
+
+    for (let i = 0; i < 25; i++) {
+        const material = new THREE.MeshPhongMaterial({
+            color: colors[Math.floor(Math.random() * colors.length)],
+            emissive: 0xff0000,
+            emissiveIntensity: 0.1,
+            shininess: 100,
+            transparent: true,
+            opacity: 0.9
+        });
+        const heart = new THREE.Mesh(heartGeometry, material);
+        heart.position.x = (Math.random() - 0.5) * 50;
+        heart.position.y = (Math.random() - 0.5) * 50;
+        heart.position.z = (Math.random() - 0.5) * 50;
+        const scale = Math.random() * 0.8 + 0.5;
+        heart.scale.set(scale, scale, scale);
+        heart.rotation.x = Math.random() * Math.PI;
+        heart.rotation.y = Math.random() * Math.PI;
+        heart.userData = {
+            speedX: Math.random() * 0.02 - 0.01,
+            speedY: Math.random() * 0.02 - 0.01,
+            speedZ: Math.random() * 0.02 - 0.01,
+            rotationSpeedX: Math.random() * 0.01,
+            rotationSpeedY: Math.random() * 0.01,
+            originalX: heart.position.x,
+            originalY: heart.position.y,
+            originalZ: heart.position.z,
+            floatDistance: 2 + Math.random() * 3
+        };
+        scene.add(heart);
+        hearts.push(heart);
+    }
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const time = Date.now() * 0.001;
+        hearts.forEach(heart => {
+            heart.position.x = heart.userData.originalX + Math.sin(time * heart.userData.speedX * 10) * heart.userData.floatDistance;
+            heart.position.y = heart.userData.originalY + Math.sin(time * heart.userData.speedY * 10) * heart.userData.floatDistance;
+            heart.position.z = heart.userData.originalZ + Math.sin(time * heart.userData.speedZ * 10) * heart.userData.floatDistance;
+            heart.rotation.x += heart.userData.rotationSpeedX;
+            heart.rotation.y += heart.userData.rotationSpeedY;
+        });
+        renderer.render(scene, camera);
+    }
+    animate();
+
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Steps navigation
+    // Step navigation
     let currentStep = 1;
     const totalSteps = 5;
     function showStep(step) {
@@ -201,6 +272,18 @@
     document.getElementById('next-btn-2').onclick = () => { currentStep=3; showStep(currentStep); };
     document.getElementById('next-btn-3').onclick = () => { currentStep=4; showStep(currentStep); };
     document.getElementById('next-btn-4').onclick = () => { currentStep=5; showStep(currentStep); };
+
+    // Confetti
+    document.getElementById('confetti-btn').addEventListener('click', () => {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff0000', '#ff69b4', '#ff1493', '#ffc0cb'] });
+        setTimeout(() => {
+            confetti({ particleCount: 30, spread: 60, origin: { y: 0.5 }, shapes: ['heart'], colors: ['#ff0000', '#ff69b4'] });
+        }, 300);
+        setTimeout(() => {
+            confetti({ particleCount: 20, angle: 60, spread: 55, origin: { x: 0 }, shapes: ['heart'], colors: ['#ff0000', '#ff69b4'] });
+            confetti({ particleCount: 20, angle: 120, spread: 55, origin: { x: 1 }, shapes: ['heart'], colors: ['#ff0000', '#ff69b4'] });
+        }, 600);
+    });
 </script>
 </body>
 </html>
